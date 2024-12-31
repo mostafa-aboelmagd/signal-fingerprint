@@ -142,10 +142,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.similarityResults = []
 
         if self.loadedFiles[0] is not None and self.loadedFiles[1] is not None:
-            # Truncate both signals to the length of the shorter signal
-            minLength = min(len(self.loadedFiles[0]), len(self.loadedFiles[1]))
-            loadedAudio1 = self.loadedFiles[0][ : minLength]
-            loadedAudio2 = self.loadedFiles[1][ : minLength]
+            # Get the lengths of both signals
+            len1 = len(self.loadedFiles[0])
+            len2 = len(self.loadedFiles[1])
+
+            # Pad zeros to the shorter signal
+            if len1 < len2:
+                loadedAudio1 = np.pad(self.loadedFiles[0], (0, len2 - len1), mode="constant")
+                loadedAudio2 = self.loadedFiles[1]
+            else:
+                loadedAudio1 = self.loadedFiles[0]
+                loadedAudio2 = np.pad(self.loadedFiles[1], (0, len1 - len2), mode="constant")
 
             weightedSignal = (self.sliders[0].value() / 100.0) * loadedAudio1 +  (self.sliders[1].value() / 100.0) * loadedAudio2
             samplingRate = self.samplingRates[0]
