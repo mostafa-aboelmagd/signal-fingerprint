@@ -1,4 +1,6 @@
 from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QTableWidgetItem
+from PyQt5.QtCore import Qt
 from Ui_window import Ui_MainWindow
 import pyqtgraph as pg
 import ComputeHashedFeatures
@@ -24,6 +26,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.loadedFiles = [None, None]
         self.samplingRates = [0, 0]
         self.playingStatus = [False, False]
+        self.similarityResults = []
 
         self.audioGraphs = [self.leftGraphWidget, self.rightGraphWidget]
         self.fileLabels = [self.inputLabel_1, self.inputLabel_2]
@@ -67,6 +70,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.loadedFiles[1], self.samplingRates[1] = librosa.load(filePath)
                 self.fileLabels[1].setText(Path(filePath).name[7 : -4])
                 self.plotAudioWaveform(self.loadedFiles[1], self.samplingRates[1], self.audioGraphs[1])
+        
+            self.playingStatus[0] = False
+            self.playingStatus[1] = False
+            sd.stop()
         else:
             QtWidgets.QMessageBox.warning(self, "No File", "No File Was Selected!")
     
@@ -81,7 +88,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Set labels and title
         graphWidget.setLabel("left", "Amplitude")
-        graphWidget.setLabel("bottom", "Time")
+        graphWidget.setLabel("bottom", "Time (s)")
     
     def playAudio(self):
         if self.sender() == self.playButtons[0]:
@@ -125,30 +132,44 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             QtWidgets.QMessageBox.warning(self, "No File", "Please Load A File First!")
             return
         
+        self.similarityResults = []
         hashString = ComputeHashedFeatures.processHash(self.browsedFiles[0])
-        loadedHash = imagehash.hex_to_hash(hashString)
+        loadedHash = imagehash.hex_to_hash(hashString) # Converts hexadecimal hash of our browsed signals into imagehash object
 
         databaseFolder = Path("./task5_hashes")
-        comparisons = []
 
         for jsonFile in databaseFolder.glob("*.json"):
             with open(jsonFile, "r") as f:
                 data = json.load(f)
-                storedHash = imagehash.hex_to_hash(data["featuresHash"])  # Convert stored hash back to imagehash object
-                distance = loadedHash - storedHash  # Compute Hamming distance (number of positions at which two binary strings of equal length are different)
+                storedHash = imagehash.hex_to_hash(data["featuresHash"])  # Converts stored hash back to imagehash object
+                distance = loadedHash - storedHash  # Computes Hamming distance (number of positions at which two binary strings of equal length are different)
                 similarityPercentage = (1 - (distance / 64)) * 100 # perceptual hashes are usually 64 bits
-                comparisons.append((jsonFile.name, similarityPercentage))
+                self.similarityResults.append((jsonFile.name[7 : -5], similarityPercentage))
 
-        # Sort by descending similarity
-        comparisons.sort(key=lambda x: x[1], reverse=True)
+        # Sort by descending similarity and get the top 10
+        self.similarityResults.sort(key=lambda x: x[1], reverse=True)
+        self.similarityResults = self.similarityResults[ : min(10, len(self.similarityResults))]
 
-        # Display results
-        resultsText = "Similarity Results:\n\n"
-        for fileName, similarityPercentage in comparisons:
-            resultsText += f"{fileName}: Percentage = {similarityPercentage}\n\n"
+        self.showResult()
+    
+    def showResult(self):
+        # Clear the table before inserting new data
+        self.dataTable.setRowCount(0)
 
-        QtWidgets.QMessageBox.information(self, "Comparison Results", resultsText)
-            
+        # Populate the table with the comparison results
+        for fileName, similarityPercentage in self.similarityResults:
+            rowPosition = self.dataTable.rowCount()
+            self.dataTable.insertRow(rowPosition)
+
+            # Create and style table items
+            fileItem = QTableWidgetItem(fileName)
+            fileItem.setTextAlignment(Qt.AlignCenter)
+            scoreItem = QTableWidgetItem(f"{similarityPercentage:.2f}%")
+            scoreItem.setTextAlignment(Qt.AlignCenter)
+
+            self.dataTable.setItem(rowPosition, 0, fileItem)
+            self.dataTable.setItem(rowPosition, 1, scoreItem)
+                
 def main():
     app = QtWidgets.QApplication(sys.argv)
     window = MainWindow()
