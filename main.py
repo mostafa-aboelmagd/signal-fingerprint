@@ -22,7 +22,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.show()
     
     def setupVariables(self):
-        self.browsedFiles = [None, None]
         self.loadedFiles = [None, None]
         self.samplingRates = [0, 0]
         self.playingStatus = [False, False]
@@ -39,7 +38,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             slider.setMaximum(100)
             slider.setTickInterval(10)
             slider.setSingleStep(10)
-        self.sliders[0].setValue(100)
+            slider.setEnabled(False)
     
     def addEventListeners(self):
         for button in self.browseButtons:
@@ -61,12 +60,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         filePath, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Load Audio File", "", "Audio Files (*.wav)")
         if filePath:
             if self.sender() == self.browseButtons[0]:
-                self.browsedFiles[0] = filePath
+                if self.loadedFiles[1] is None:
+                    self.sliders[0].setValue(100)
+                else:
+                    for slider in self.sliders:
+                        slider.setEnabled(True)
+
                 self.loadedFiles[0], self.samplingRates[0] = librosa.load(filePath)
                 self.fileLabels[0].setText(Path(filePath).name[7 : -4])
                 self.plotAudioWaveform(self.loadedFiles[0], self.samplingRates[0], self.audioGraphs[0])
             else:
-                self.browsedFiles[1] = filePath
+                if self.loadedFiles[0] is None:
+                    self.sliders[1].setValue(100)
+                else:
+                    for slider in self.sliders:
+                        slider.setEnabled(True)
+
                 self.loadedFiles[1], self.samplingRates[1] = librosa.load(filePath)
                 self.fileLabels[1].setText(Path(filePath).name[7 : -4])
                 self.plotAudioWaveform(self.loadedFiles[1], self.samplingRates[1], self.audioGraphs[1])
@@ -92,13 +101,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     
     def playAudio(self):
         if self.sender() == self.playButtons[0]:
-            if self.browsedFiles[0] != None and self.playingStatus[0] == False:
+            if self.loadedFiles[0] is not None and self.playingStatus[0] == False:
                 self.playingStatus[0] = True
                 self.playingStatus[1] = False
                 sd.stop()
                 sd.play(self.loadedFiles[0], self.samplingRates[0])
         else:
-            if self.browsedFiles[1] != None and self.playingStatus[1] == False:
+            if self.loadedFiles[1] is not None and self.playingStatus[1] == False:
                 self.playingStatus[1] = True
                 self.playingStatus[0] = False
                 sd.stop()
@@ -106,11 +115,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     
     def pauseAudio(self):
         if self.sender() == self.pauseButtons[0]:
-            if self.browsedFiles[0] != None and self.playingStatus[0] == True:
+            if self.loadedFiles[0] is not None and self.playingStatus[0] == True:
                 self.playingStatus[0] = False
                 sd.stop()
         else:
-            if self.browsedFiles[1] != None and self.playingStatus[1] == True:
+            if self.loadedFiles[1] is not None and self.playingStatus[1] == True:
                 self.playingStatus[1] = False
                 sd.stop()
         
@@ -128,12 +137,24 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sliders[1].blockSignals(False)
         
     def computeResult(self):
-        if self.browsedFiles[0] == None and self.browsedFiles[1] == None:
+        if self.loadedFiles[0] is None and self.loadedFiles[1] is None:
             QtWidgets.QMessageBox.warning(self, "No File", "Please Load A File First!")
             return
         
         self.similarityResults = []
-        hashString = ComputeHashedFeatures.processHash(self.browsedFiles[0])
+
+        sliderValues = [self.sliders[0].value() / 100.0, self.sliders[1].value() / 100.0]
+        if self.loadedFiles[0] is not None and self.loadedFiles[1] is not None:
+            weightedSignal = sliderValues[0] * self.loadedFiles[0] + sliderValues[1] * self.loadedFiles[1]
+            samplingRate = self.samplingRates[0]
+        elif self.loadedFiles[0] is not None:
+            weightedSignal = self.loadedFiles[0]
+            samplingRate = self.samplingRates[0]
+        else:
+            weightedSignal = self.loadedFiles[1]
+            samplingRate = self.samplingRates[1]
+
+        hashString = ComputeHashedFeatures.processHash(weightedSignal, samplingRate)
         loadedHash = imagehash.hex_to_hash(hashString) # Converts hexadecimal hash of our browsed signals into imagehash object
 
         databaseFolder = Path("./task5_hashes")

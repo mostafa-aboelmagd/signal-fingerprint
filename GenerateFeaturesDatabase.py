@@ -1,7 +1,8 @@
+import ComputeHashedFeatures
 import shutil
 import json
 from pathlib import Path
-import ComputeHashedFeatures
+import librosa
 
 # Save the hashed features locally
 def saveHash(wavFile, featuresHash, outputDirectory):
@@ -26,5 +27,6 @@ if outputDirectory.exists():
         shutil.rmtree(outputDirectory)
 
 for file in inputDirectory.glob("*.wav"):
-    hashedFeatures = ComputeHashedFeatures.processHash(file)
+    loadedSound, samplingRate = librosa.load(file, sr=None) # loadedSound is an array containing the amplitudes, sr is set to none so that it uses the original sampling rate
+    hashedFeatures = ComputeHashedFeatures.processHash(loadedSound, samplingRate)
     saveHash(file, hashedFeatures, outputDirectory)
