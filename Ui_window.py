@@ -1,5 +1,6 @@
 import sys
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                              QLabel, QPushButton, QSlider, QTableWidget, QTableWidgetItem, QHeaderView)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
@@ -172,13 +173,13 @@ class Ui_MainWindow:
             self.dataTable.setItem(i, 1, item2)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle("MainWindow")
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "Shazam-like app"))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    MainWindow = QMainWindow()
+    MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
-    ui.retranslateUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
