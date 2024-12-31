@@ -15,7 +15,8 @@ def extractFeatures(wavFile):
         "chroma": librosa.feature.chroma_stft(y=loadedSound, sr=samplingRate), # Represents harmonic content (energy distribution across 12 different pitch classes)
         "spectralContrast": librosa.feature.spectral_contrast(y=loadedSound, sr=samplingRate), # Represents difference in amplitude between peaks and valleys
         "spectralRollof": librosa.feature.spectral_rolloff(y=loadedSound, sr=samplingRate), # Measures the frequency below which a certain percentage (85%) of the total spectral energy lies
-        "melSpectrogram": librosa.power_to_db(melSpectrogram, ref=np.max) # Converts the mel spectrogram to log scale, compressing loud values and making the quieter parts more visible
+        "zcr": librosa.feature.zero_crossing_rate(y=loadedSound), # Measure of how often the signal changes sign
+        "melSpectrogram": librosa.power_to_db(melSpectrogram, ref=np.max), # Converts the mel spectrogram to log scale, compressing loud values and making the quieter parts more visible
     }
 
     return features
