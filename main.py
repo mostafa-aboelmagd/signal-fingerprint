@@ -1,7 +1,10 @@
 from PyQt5 import QtWidgets
 from Ui_window import Ui_MainWindow
-from pathlib import Path
+import pyqtgraph as pg
 import ComputeHashedFeatures
+from pathlib import Path
+import numpy as np
+import librosa
 import json
 import sys
 import imagehash
@@ -44,12 +47,30 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if filePath:
             if self.sender() == self.browseButtons[0]:
                 self.loadedFiles[0] = filePath
-                self.fileLabels[0].setText(filePath[7 : -4])
+                self.fileLabels[0].setText(Path(filePath).name[7 : -4])
+                self.plotAudioWaveform(filePath, self.audioGraphs[0])
             else:
                 self.loadedFiles[1] = filePath
-                self.fileLabels[1].setText(filePath[7 : -4])
+                self.fileLabels[1].setText(Path(filePath).name[7 : -4])
+                self.plotAudioWaveform(filePath, self.audioGraphs[1])
         else:
             QtWidgets.QMessageBox.warning(self, "No File", "No File Was Selected!")
+    
+    def plotAudioWaveform(self, filePath, graphWidget):
+        # Load audio using librosa
+        loadedAudio, samplingRate = librosa.load(filePath)
+
+        # Create time axis
+        duration = librosa.get_duration(y=loadedAudio, sr=samplingRate)
+        time = np.linspace(0., duration, len(loadedAudio))
+
+        # Plot waveform using pyqtgraph
+        graphWidget.clear()  # Clear previous plots
+        graphWidget.plot(time, loadedAudio, pen=pg.mkPen(color='b', width=1))
+
+        # Set labels and title
+        graphWidget.setLabel("left", "Amplitude")
+        graphWidget.setLabel("bottom", "Time")
     
     def playAudio(self):
         if self.sender() == self.playButtons[0]:
