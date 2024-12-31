@@ -3,7 +3,7 @@ import numpy as np
 import imagehash
 from PIL import Image
 
-# Extract features from the WAV file
+# Extracts features from the WAV file
 def extractFeatures(loadedSound, samplingRate):    
     features = {
         "mfcc": librosa.feature.mfcc(y=loadedSound, sr=samplingRate), # Mel-Frequency Cepstral Coefficients represents power spectrum (timbre or quality) of the sound
@@ -13,27 +13,29 @@ def extractFeatures(loadedSound, samplingRate):
 
     return features
 
-# Normalize features and convert to a 2D array
+# Normalizes features and convert to a 2D array
 def normalizeFeatures(features):
     featuresList = []
-    # Normalize each feature between 0 and 255 as perceptual hashing will treat the features as an image object
+    # Normalizes each feature between 0 and 255 as perceptual hashing will treat the features as an image object
     for key in features:
         currFeature = features[key]
-        featuresList.append((currFeature - np.min(currFeature)) / (np.max(currFeature) - np.min(currFeature)) * 255)
+        featuresList.append((key, (currFeature - np.min(currFeature)) / (np.max(currFeature) - np.min(currFeature)) * 255))
 
-    # Combine features into a 2D array (stack rows vertically)
-    featuresMatrix = np.vstack(featuresList).astype(np.uint8)
-    return featuresMatrix
+    return featuresList
 
-# Compute the perceptual hash
-def hashFeatures(featuresMatrix):
-    image = Image.fromarray(featuresMatrix) # Converts an array into an image object
-    hashedFeatures = imagehash.phash(image) # Creates a hash value that represents the visual (perceptual) content of an image ignoring slight variations that aren't percieved
-    return str(hashedFeatures) # Hexadecimal representation of the hashing making it easier to store
+# Computes the perceptual hash
+def hashFeatures(featuresList):
+    hashedFeaturesDict = {}
+    for key, normalizedFeature in featuresList:
+        image = Image.fromarray(normalizedFeature) # Converts individual feature into an image object
+        hashedFeature = imagehash.phash(image, hash_size=16) # Creates a hash value that represents the visual (perceptual) content of an image ignoring slight variations that aren't percieved
+        hashedFeaturesDict[key] = str(hashedFeature) # Hexadecimal representation of the hashing making it easier to store
+    
+    return hashedFeaturesDict
 
-# Process the hashed features
+# Processes the hashed features
 def processHash(loadedSound, samplingRate):
     features = extractFeatures(loadedSound, samplingRate)
-    featuresMatrix = normalizeFeatures(features)
-    featuresHash = hashFeatures(featuresMatrix)
+    featuresList = normalizeFeatures(features)
+    featuresHash = hashFeatures(featuresList)
     return featuresHash

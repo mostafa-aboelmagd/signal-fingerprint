@@ -1,3 +1,5 @@
 {
-    "featuresHash": "e2c2c1c1cd8dbd3c"
+    "mfcc": "e3717fa332ab322b363b363936aa36bb3629224f22cb32cb325e2b5429463356",
+    "chroma": "f2bdd92772cb66f50dd1186a0d3206cc528e7170b8628d0ff22d72f046dd8e8f",
+    "melSpectrogram": "beabbebbbdb1bdf5fd5559575b5649564566652e652a02a812a9128912811295"
 }

@@ -84,8 +84,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.playingStatus[0] = False
             self.playingStatus[1] = False
             sd.stop()
-        else:
-            QtWidgets.QMessageBox.warning(self, "No File", "No File Was Selected!")
     
     def plotAudioWaveform(self, loadedAudio, samplingRate, graphWidget):
         # Create time axis
@@ -139,7 +137,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         
     def computeResult(self):
         if self.loadedFiles[0] is None and self.loadedFiles[1] is None:
-            QtWidgets.QMessageBox.warning(self, "No File", "Please Load A File First!")
             return
         
         self.similarityResults = []
@@ -160,17 +157,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             weightedSignal = self.loadedFiles[1]
             samplingRate = self.samplingRates[1]
 
-        hashString = ComputeHashedFeatures.processHash(weightedSignal, samplingRate)
-        loadedHash = imagehash.hex_to_hash(hashString) # Converts hexadecimal hash of our browsed signals into imagehash object
-
+        hashObject = ComputeHashedFeatures.processHash(weightedSignal, samplingRate)
         databaseFolder = Path("./task5_hashes")
 
         for jsonFile in databaseFolder.glob("*.json"):
             with open(jsonFile, "r") as f:
+                distances = []
                 data = json.load(f)
-                storedHash = imagehash.hex_to_hash(data["featuresHash"])  # Converts stored hash back to imagehash object
-                distance = loadedHash - storedHash  # Computes Hamming distance (number of positions at which two binary strings of equal length are different)
-                similarityPercentage = (1 - (distance / 64)) * 100 # perceptual hashes are usually 64 bits
+
+                for key in data:
+                    loadedFeatureHash = imagehash.hex_to_hash(hashObject[key]) # Converts hexadecimal hash of our browsed signals into imagehash object
+                    storedFeatureHash = imagehash.hex_to_hash(data[key])
+                    distances.append(loadedFeatureHash - storedFeatureHash) # Computes Hamming distance (number of positions at which two binary strings of equal length are different)
+                
+                averageDistance = 0
+                for distance in distances:
+                    averageDistance += distance
+                averageDistance /= len(distances)
+
+                similarityPercentage = (1 - (averageDistance / 255)) * 100
                 self.similarityResults.append((jsonFile.name[8 : -5], similarityPercentage))
 
         # Sort by descending similarity and get the top 10
