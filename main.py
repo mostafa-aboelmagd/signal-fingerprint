@@ -67,7 +67,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     for slider in self.sliders:
                         slider.setEnabled(True)
 
-                self.loadedFiles[0], self.samplingRates[0] = librosa.load(filePath)
+                self.loadedFiles[0], self.samplingRates[0] = librosa.load(filePath, sr=None)
                 self.fileLabels[0].setText(Path(filePath).name[7 : -4])
                 self.plotAudioWaveform(self.loadedFiles[0], self.samplingRates[0], self.audioGraphs[0])
             else:
@@ -77,7 +77,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     for slider in self.sliders:
                         slider.setEnabled(True)
 
-                self.loadedFiles[1], self.samplingRates[1] = librosa.load(filePath)
+                self.loadedFiles[1], self.samplingRates[1] = librosa.load(filePath, sr=None)
                 self.fileLabels[1].setText(Path(filePath).name[7 : -4])
                 self.plotAudioWaveform(self.loadedFiles[1], self.samplingRates[1], self.audioGraphs[1])
         
