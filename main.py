@@ -19,9 +19,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.loadedFiles = [None, None]
         self.playingStatus = [False, False]
 
+        self.audioGraphs = [self.leftGraphWidget, self.rightGraphWidget]
+        self.fileLabels = [self.inputLabel_1, self.inputLabel_2]
         self.browseButtons = [self.browseBtn_1, self.browseBtn_2]
         self.playButtons = [self.startBtn_1, self.startBtn_2]
         self.pauseButtons = [self.pauseBtn_1, self.pauseBtn_2]
+        self.sliders = [self.slider_1, self.slider_2]
     
     def addEventListeners(self):
         for button in self.browseButtons:
@@ -41,8 +44,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if filePath:
             if self.sender() == self.browseButtons[0]:
                 self.loadedFiles[0] = filePath
+                self.fileLabels[0].setText(filePath[7 : -4])
             else:
                 self.loadedFiles[1] = filePath
+                self.fileLabels[1].setText(filePath[7 : -4])
         else:
             QtWidgets.QMessageBox.warning(self, "No File", "No File Was Selected!")
     
