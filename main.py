@@ -36,6 +36,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         for slider in self.sliders:
             slider.setMinimum(0)
             slider.setMaximum(100)
+            slider.setValue(0)
             slider.setTickInterval(10)
             slider.setSingleStep(10)
             slider.setEnabled(False)
