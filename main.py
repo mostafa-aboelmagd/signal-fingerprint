@@ -28,6 +28,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.playButtons = [self.startBtn_1, self.startBtn_2]
         self.pauseButtons = [self.pauseBtn_1, self.pauseBtn_2]
         self.sliders = [self.slider_1, self.slider_2]
+        for slider in self.sliders:
+            slider.setMinimum(0)
+            slider.setMaximum(100)
+            slider.setTickInterval(10)
+            slider.setSingleStep(10)
+        self.sliders[0].setValue(100)
     
     def addEventListeners(self):
         for button in self.browseButtons:
@@ -38,6 +44,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         
         for button in self.pauseButtons:
             button.clicked.connect(self.pauseAudio)
+        
+        for slider in self.sliders:
+            slider.valueChanged.connect(self.updateSliders)
 
         self.resultBtn.clicked.connect(self.computeResult)
 
@@ -87,6 +96,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             if self.loadedFiles[1] != None and self.playingStatus[1] == True:
                 self.playingStatus[1] = False
+    
+    def updateSliders(self):
+        # Temporarily disconnect the valueChanged signal to avoid infinite loop
+        self.sliders[0].blockSignals(True)
+        self.sliders[1].blockSignals(True)
+
+        if self.sender() == self.sliders[0]:
+            self.sliders[1].setValue(100 - self.sliders[0].value())
+        else:
+            self.sliders[0].setValue(100 - self.sliders[1].value())
+        
+        self.sliders[0].blockSignals(False)
+        self.sliders[1].blockSignals(False)
         
     def computeResult(self):
         if self.loadedFiles[0] == None and self.loadedFiles[1] == None:
