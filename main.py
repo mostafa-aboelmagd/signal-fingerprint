@@ -5,6 +5,7 @@ import ComputeHashedFeatures
 from pathlib import Path
 import numpy as np
 import librosa
+import sounddevice as sd
 import json
 import sys
 import imagehash
@@ -19,7 +20,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.show()
     
     def setupVariables(self):
+        self.browsedFiles = [None, None]
         self.loadedFiles = [None, None]
+        self.samplingRates = [0, 0]
         self.playingStatus = [False, False]
 
         self.audioGraphs = [self.leftGraphWidget, self.rightGraphWidget]
@@ -55,20 +58,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         filePath, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Load Audio File", "", "Audio Files (*.wav)")
         if filePath:
             if self.sender() == self.browseButtons[0]:
-                self.loadedFiles[0] = filePath
+                self.browsedFiles[0] = filePath
+                self.loadedFiles[0], self.samplingRates[0] = librosa.load(filePath)
                 self.fileLabels[0].setText(Path(filePath).name[7 : -4])
-                self.plotAudioWaveform(filePath, self.audioGraphs[0])
+                self.plotAudioWaveform(self.loadedFiles[0], self.samplingRates[0], self.audioGraphs[0])
             else:
-                self.loadedFiles[1] = filePath
+                self.browsedFiles[1] = filePath
+                self.loadedFiles[1], self.samplingRates[1] = librosa.load(filePath)
                 self.fileLabels[1].setText(Path(filePath).name[7 : -4])
-                self.plotAudioWaveform(filePath, self.audioGraphs[1])
+                self.plotAudioWaveform(self.loadedFiles[1], self.samplingRates[1], self.audioGraphs[1])
         else:
             QtWidgets.QMessageBox.warning(self, "No File", "No File Was Selected!")
     
-    def plotAudioWaveform(self, filePath, graphWidget):
-        # Load audio using librosa
-        loadedAudio, samplingRate = librosa.load(filePath)
-
+    def plotAudioWaveform(self, loadedAudio, samplingRate, graphWidget):
         # Create time axis
         duration = librosa.get_duration(y=loadedAudio, sr=samplingRate)
         time = np.linspace(0., duration, len(loadedAudio))
@@ -83,20 +85,28 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     
     def playAudio(self):
         if self.sender() == self.playButtons[0]:
-            if self.loadedFiles[0] != None and self.playingStatus[0] == False:
+            if self.browsedFiles[0] != None and self.playingStatus[0] == False:
                 self.playingStatus[0] = True
+                self.playingStatus[1] = False
+                sd.stop()
+                sd.play(self.loadedFiles[0], self.samplingRates[0])
         else:
-            if self.loadedFiles[1] != None and self.playingStatus[1] == False:
+            if self.browsedFiles[1] != None and self.playingStatus[1] == False:
                 self.playingStatus[1] = True
+                self.playingStatus[0] = False
+                sd.stop()
+                sd.play(self.loadedFiles[1], self.samplingRates[1])
     
     def pauseAudio(self):
         if self.sender() == self.pauseButtons[0]:
-            if self.loadedFiles[0] != None and self.playingStatus[0] == True:
+            if self.browsedFiles[0] != None and self.playingStatus[0] == True:
                 self.playingStatus[0] = False
+                sd.stop()
         else:
-            if self.loadedFiles[1] != None and self.playingStatus[1] == True:
+            if self.browsedFiles[1] != None and self.playingStatus[1] == True:
                 self.playingStatus[1] = False
-    
+                sd.stop()
+        
     def updateSliders(self):
         # Temporarily disconnect the valueChanged signal to avoid infinite loop
         self.sliders[0].blockSignals(True)
@@ -111,11 +121,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sliders[1].blockSignals(False)
         
     def computeResult(self):
-        if self.loadedFiles[0] == None and self.loadedFiles[1] == None:
+        if self.browsedFiles[0] == None and self.browsedFiles[1] == None:
             QtWidgets.QMessageBox.warning(self, "No File", "Please Load A File First!")
             return
         
-        hashString = ComputeHashedFeatures.processHash(self.loadedFiles[0])
+        hashString = ComputeHashedFeatures.processHash(self.browsedFiles[0])
         loadedHash = imagehash.hex_to_hash(hashString)
 
         databaseFolder = Path("./task5_hashes")
