@@ -68,7 +68,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                         slider.setEnabled(True)
 
                 self.loadedFiles[0], self.samplingRates[0] = librosa.load(filePath, sr=None)
-                self.fileLabels[0].setText(Path(filePath).name[7 : -4])
+                self.fileLabels[0].setText(Path(filePath).name[8 : -4])
                 self.plotAudioWaveform(self.loadedFiles[0], self.samplingRates[0], self.audioGraphs[0])
             else:
                 if self.loadedFiles[0] is None:
@@ -78,7 +78,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                         slider.setEnabled(True)
 
                 self.loadedFiles[1], self.samplingRates[1] = librosa.load(filePath, sr=None)
-                self.fileLabels[1].setText(Path(filePath).name[7 : -4])
+                self.fileLabels[1].setText(Path(filePath).name[8 : -4])
                 self.plotAudioWaveform(self.loadedFiles[1], self.samplingRates[1], self.audioGraphs[1])
         
             self.playingStatus[0] = False
@@ -171,7 +171,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 storedHash = imagehash.hex_to_hash(data["featuresHash"])  # Converts stored hash back to imagehash object
                 distance = loadedHash - storedHash  # Computes Hamming distance (number of positions at which two binary strings of equal length are different)
                 similarityPercentage = (1 - (distance / 64)) * 100 # perceptual hashes are usually 64 bits
-                self.similarityResults.append((jsonFile.name[7 : -5], similarityPercentage))
+                self.similarityResults.append((jsonFile.name[8 : -5], similarityPercentage))
 
         # Sort by descending similarity and get the top 10
         self.similarityResults.sort(key=lambda x: x[1], reverse=True)
