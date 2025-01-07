@@ -16,7 +16,8 @@
 |**Styling** | [![CSS](https://img.shields.io/badge/CSS-1572B6?logo=css3&logoColor=fff)](#)|
 
 ## Demo
-<video controls src="./screenshots/demo.mp4" title="Demo"></video>
+
+https://github.com/user-attachments/assets/d4f41313-98ee-4964-8df0-78ed5dac24ad
 
 ## How It Works
 - Split Each Song In Our Dataset Into 3 Audio Files, Consisting Of Original Song, Instruments Only, Vocals Only
