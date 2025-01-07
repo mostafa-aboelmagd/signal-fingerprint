@@ -26,7 +26,7 @@ https://github.com/user-attachments/assets/d4f41313-98ee-4964-8df0-78ed5dac24ad
 - Normalize & Specular Hash Each Feature
 - Save The Hashed Features Of Each Audio File
 - Run The Application And Browse Any Song
-- Compare The Hashed Features Of the Browsed Song With Our Hashed Dataset `hashed` directory
+- Compare The Hashed Features Of the Browsed Song With Our Hashed Dataset `hashes` directory
 
 
 ## Installation
