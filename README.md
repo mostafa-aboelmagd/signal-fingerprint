@@ -47,7 +47,7 @@ https://github.com/user-attachments/assets/d4f41313-98ee-4964-8df0-78ed5dac24ad
 
 5. Run `main.py` File
     ```bash
-    python MainWindow.py
+    python main.py
     ```
 
 ## Contributors
