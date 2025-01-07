@@ -16,8 +16,8 @@ def saveHash(wavFile, featuresHash, outputDirectory):
         json.dump(featuresHash, f, indent=4) # The indent=4 argument makes the JSON output pretty printed 
     
 # Loop over our dataset and save the computed hashed features for each song file
-inputDirectory = Path("./task5_data")
-outputDirectory = Path("./task5_hashes")
+inputDirectory = Path("./data")
+outputDirectory = Path("./hashes")
 if outputDirectory.exists():
         shutil.rmtree(outputDirectory)
 

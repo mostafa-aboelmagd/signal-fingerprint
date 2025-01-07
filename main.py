@@ -165,7 +165,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             samplingRate = self.samplingRates[1]
 
         hashObject = ComputeHashedFeatures.processHash(weightedSignal, samplingRate)
-        databaseFolder = Path("./task5_hashes")
+        databaseFolder = Path("./hashes")
 
         for jsonFile in databaseFolder.glob("*.json"):
             with open(jsonFile, "r") as f:
